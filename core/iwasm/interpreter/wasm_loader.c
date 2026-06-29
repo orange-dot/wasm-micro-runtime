@@ -1396,6 +1396,16 @@ load_init_expr(WASMModule *module, const uint8 **p_buf, const uint8 *buf_end,
                             WASMValue len_val;
                             uint32 len;
 
+                            if (!wasm_is_defaultable_array_elem_type(
+                                    array_type->elem_type,
+                                    array_type->elem_ref_type)) {
+                                set_error_buf(
+                                    error_buf, error_buf_size,
+                                    "array.new_default requires a defaultable "
+                                    "element type");
+                                goto fail;
+                            }
+
                             /* POP(i32) */
                             if (!pop_const_expr_stack(
                                     &const_expr_ctx, NULL, VALUE_TYPE_I32, NULL,
@@ -15019,6 +15029,16 @@ re_scan:
                             }
                             else
                                 POP_REF(elem_type);
+                        }
+                        else if (opcode1 == WASM_OP_ARRAY_NEW_DEFAULT) {
+                            if (!wasm_is_defaultable_array_elem_type(
+                                    elem_type, array_type->elem_ref_type)) {
+                                set_error_buf(
+                                    error_buf, error_buf_size,
+                                    "array.new_default requires a defaultable "
+                                    "element type");
+                                goto fail;
+                            }
                         }
                         else if (opcode1 == WASM_OP_ARRAY_NEW_DATA) {
                             /* offset of data segment */
